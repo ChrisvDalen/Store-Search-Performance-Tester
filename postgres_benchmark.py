@@ -3,15 +3,15 @@ import random
 import string
 import time
 
-import psycopg2
+import psycopg
 
 
-def random_text(length=10):
+def random_text(length: int = 10) -> str:
     """Generate random alphanumeric text."""
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="PostgreSQL benchmark tool")
     parser.add_argument("--conn", required=True, help="PostgreSQL connection string")
     parser.add_argument("--setup", help="SQL statement to run before benchmarking")
@@ -21,24 +21,23 @@ def main():
     parser.add_argument("--num-queries", type=int, default=1000, help="Number of queries to run")
     args = parser.parse_args()
 
-    with psycopg2.connect(args.conn) as conn:
-        with conn.cursor() as cur:
-            if args.setup:
-                cur.execute(args.setup)
-                conn.commit()
-
-            start = time.time()
-            for _ in range(args.num_inserts):
-                cur.execute(args.insert, (random_text(20),))
+    with psycopg.connect(args.conn) as conn, conn.cursor() as cur:
+        if args.setup:
+            cur.execute(args.setup)
             conn.commit()
-            insert_time = time.time() - start
 
-            start = time.time()
-            for _ in range(args.num_queries):
-                idx = random.randint(1, args.num_inserts)
-                cur.execute(args.query, (idx,))
-                cur.fetchone()
-            query_time = time.time() - start
+        start = time.perf_counter()
+        for _ in range(args.num_inserts):
+            cur.execute(args.insert, (random_text(20),))
+        conn.commit()
+        insert_time = time.perf_counter() - start
+
+        start = time.perf_counter()
+        for _ in range(args.num_queries):
+            idx = random.randint(1, args.num_inserts)
+            cur.execute(args.query, (idx,))
+            cur.fetchone()
+        query_time = time.perf_counter() - start
 
     print(f"Inserted {args.num_inserts} rows in {insert_time:.2f}s ({args.num_inserts/insert_time:.2f} rows/s)")
     print(f"Executed {args.num_queries} queries in {query_time:.2f}s ({args.num_queries/query_time:.2f} q/s)")

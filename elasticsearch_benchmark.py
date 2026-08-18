@@ -1,36 +1,39 @@
 import argparse
 import json
 import time
-from typing import List, Dict, Any
+from pathlib import Path
+from typing import Any
 
 from elasticsearch import Elasticsearch, helpers
 
 
-def create_index(es: Elasticsearch, index: str, mapping: Dict[str, Any]) -> None:
+def create_index(es: Elasticsearch, index: str, mapping: dict[str, Any]) -> None:
     if es.indices.exists(index=index):
         es.indices.delete(index=index)
-    es.indices.create(index=index, body=mapping)
+    es.indices.create(index=index, **mapping)
 
 
-def bulk_insert(es: Elasticsearch, index: str, docs: List[Dict[str, Any]]) -> None:
+def bulk_insert(es: Elasticsearch, index: str, docs: list[dict[str, Any]]) -> None:
     actions = [{"_index": index, "_source": doc} for doc in docs]
     helpers.bulk(es, actions)
 
 
-def benchmark_search(es: Elasticsearch, index: str, queries: List[Dict[str, Any]], runs: int) -> None:
+def benchmark_search(es: Elasticsearch, index: str, queries: list[dict[str, Any]], runs: int) -> None:
+    if runs < 1:
+        raise ValueError("Runs must be positive")
     for q in queries:
         total_time = 0.0
         for _ in range(runs):
-            start = time.time()
-            es.search(index=index, body=q)
-            total_time += time.time() - start
+            start = time.perf_counter()
+            es.search(index=index, **q)
+            total_time += time.perf_counter() - start
         avg = total_time / runs
         print(f"Query: {json.dumps(q)} took {avg:.4f}s on average over {runs} runs")
 
 
-def load_json(path: str) -> Any:
-    with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+def load_json(path: str | Path) -> Any:
+    with Path(path).open(encoding="utf-8") as input_file:
+        return json.load(input_file)
 
 
 def main() -> None:
