@@ -1,16 +1,18 @@
-package com.example;
+package io.github.chrisvdalen.benchmark;
 
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-public class BenchmarkRunner {
+public final class BenchmarkRunner {
+    private BenchmarkRunner() {
+    }
+
     public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
+        var options = new OptionsBuilder()
                 .include(CollectionsBenchmark.class.getSimpleName())
                 .forks(1)
                 .build();
-        new Runner(opt).run();
+        new Runner(options).run();
     }
 }
