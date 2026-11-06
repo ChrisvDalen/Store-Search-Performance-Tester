@@ -4,7 +4,7 @@
 
     <groupId>io.github.chrisvdalen</groupId>
     <artifactId>store-search-performance-tester</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>Store Search Performance Tester</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
