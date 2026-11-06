@@ -23,7 +23,7 @@ python -m unittest discover --verbose
 
 ```bash
 ./mvnw package
-java -jar target/store-search-performance-tester-1.0-SNAPSHOT.jar
+java -jar target/store-search-performance-tester-1.0.jar
 ```
 
 ## PostgreSQL benchmark
